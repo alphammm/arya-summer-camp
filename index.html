@@ -1070,6 +1070,27 @@ function restorePopupEdits() {
 restorePopupEdits();
 
 // ===== INIT =====
+// URL params: ?test=welcome or ?test=update to force-show popups
+const urlParams = new URLSearchParams(window.location.search);
+const testMode = urlParams.get('test');
+if (testMode === 'welcome') {
+  // Force new-user experience
+  for (const k of Object.values(LS)) localStorage.removeItem(k);
+  state.camps=[];state.schools=[];state.classes=[];state.places=[];
+}
+if (testMode === 'update') {
+  // Force old-user experience (set version to 1 so update popup shows)
+  localStorage.setItem(LS.version, '1');
+  // Ensure some data exists
+  if (!localStorage.getItem(LS.camps)) {
+    // Seed with v1 data (without Harker)
+    state.camps=[
+      {id:genId(),name:"Swim Lessons",org:"Alto Swim Club",start:"2026-06-08",end:"2026-06-11",time:"10:00am–1:00pm",status:"registered",cost:"",age:"",color:"#06b6d4",notes:"",url:""},
+      {id:genId(),name:"Session 1A",org:"Castilleja",start:"2026-06-15",end:"2026-06-26",time:"8:30am–4:00pm",status:"registered",cost:"",age:"",color:"#a855f7",notes:"",url:""},
+    ];
+    saveData('camps');
+  }
+}
 loadAll();renderCamps();renderSchools();renderClasses();renderPlaces();
 </script>
 </body>
