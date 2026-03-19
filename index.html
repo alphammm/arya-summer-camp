@@ -260,7 +260,24 @@ a:hover{text-decoration:underline}
 </div>
 </div>
 
-<!-- ============ UPDATE MODAL ============ -->
+<!-- ============ WELCOME MODAL (first visit) ============ -->
+<div class="modal-overlay" id="welcomeModal">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:3.5rem;margin-bottom:.5rem">&#9728;&#65039;&#127957;&#65039;</div>
+    <h2 style="margin-bottom:.3rem">Welcome to <span style="color:var(--accent2)">Arya</span>'s Summer Planner!</h2>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:1.2rem">One place for camps, schools, classes &amp; adventures</p>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.2rem;text-align:left;font-size:.85rem;line-height:1.6">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><span style="font-size:1.1rem">&#127957;&#65039;</span><span><strong>Summer Camps</strong> — 7 camps registered + Harker options, timeline &amp; conflict detection</span></div>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><span style="font-size:1.1rem">&#127979;</span><span><strong>Summer School</strong> — Stanford, Nueva, Castilleja, Harker &amp; more</span></div>
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><span style="font-size:1.1rem">&#127912;</span><span><strong>Classes</strong> — 13 Palo Alto interest classes (art, math, music, swim...)</span></div>
+      <div style="display:flex;align-items:center;gap:.5rem"><span style="font-size:1.1rem">&#127961;&#65039;</span><span><strong>Places</strong> — 28 local spots &amp; travel destinations</span></div>
+    </div>
+    <p style="color:var(--muted);font-size:.75rem;margin-bottom:1rem">All data saved locally in your browser. Add, edit, delete anytime.</p>
+    <button class="btn btn-primary" onclick="closeWelcome()" style="width:100%;font-size:1rem;padding:.8rem">&#127775; Let's Plan Arya's Summer!</button>
+  </div>
+</div>
+
+<!-- ============ UPDATE MODAL (returning user, new version) ============ -->
 <div class="modal-overlay" id="updateModal">
   <div class="modal" style="text-align:center">
     <div style="font-size:3rem;margin-bottom:.5rem">&#127381;</div>
@@ -406,10 +423,11 @@ function loadAll(){
     try{ const d=localStorage.getItem(LS[k]); if(d) state[k]=JSON.parse(d); }catch(e){}
   }
   const savedVer = parseInt(localStorage.getItem(LS.version)||'0');
-  // First visit — seed everything
+  // First visit — seed everything + show welcome
   if(savedVer===0 && !state.camps.length){
     seedCamps();seedSchools();seedClasses();seedPlaces();
     localStorage.setItem(LS.version, DATA_VERSION);
+    document.getElementById('welcomeModal').classList.add('active');
     return;
   }
   // Has old data but version is behind — show update popup
@@ -422,6 +440,11 @@ function loadAll(){
   if(!state.schools.length) seedSchools();
   if(!state.classes.length) seedClasses();
   if(!state.places.length) seedPlaces();
+}
+
+function closeWelcome(){
+  document.getElementById('welcomeModal').classList.remove('active');
+  renderCamps();renderSchools();renderClasses();renderPlaces();
 }
 
 function doUpdate(mode){
