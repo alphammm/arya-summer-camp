@@ -399,6 +399,14 @@ function seedCamps(){
     {id:genId(),name:"Feel the Rhythm! Feel the Rhyme! (Week 4)",org:"Nueva",start:"2026-07-13",end:"2026-07-17",time:"9:00am–4:00pm",status:"registered",cost:"",age:"Grades 1-4",color:"#22c55e",notes:"Early Day 8-9am / Extended Day 4-5:30pm",url:"https://www.hisawyer.com/the-nueva-school/schedules"},
     {id:genId(),name:"CIT Week 7",org:"Stanford",start:"2026-07-20",end:"2026-07-24",time:"8:30am–4:00pm",status:"registered",cost:"",age:"",color:"#f97316",notes:"Counselor-in-Training",url:"https://stanfordcampcardinal.totalcamps.com/About%20Us"},
     {id:genId(),name:"Session 2B",org:"Castilleja",start:"2026-07-27",end:"2026-08-07",time:"8:30am–4:00pm",status:"registered",cost:"",age:"Grades 2-6",color:"#a855f7",notes:"Extended day 4-6pm available",url:"https://www.castilleja.org/community/summer-at-casti/casticamp/casticamp-info"},
+    // Harker Summer Camp Plus
+    {id:genId(),name:"Camp Plus 4-Week Session",org:"Harker",start:"2026-06-22",end:"2026-07-17",time:"8:30am–5:00pm",status:"interested",cost:"$4,725 (full day)",age:"Grades 1-5",color:"#ec4899",notes:"Math/LA mornings + STEM/art/music/swim afternoons. Conflicts with Castilleja 1A, Stanford Wk 4&5, Nueva.",url:"https://www.harker.org/summer/summer-camp-plus"},
+    {id:genId(),name:"Camp Plus 2-Week #1",org:"Harker",start:"2026-06-22",end:"2026-07-02",time:"8:30am–5:00pm",status:"interested",cost:"$2,115–$2,350",age:"Grades 1-5",color:"#ec4899",notes:"2-week session. Conflicts with Castilleja 1A & Stanford Wk 4.",url:"https://www.harker.org/summer/summer-camp-plus"},
+    {id:genId(),name:"Camp Plus 2-Week #2",org:"Harker",start:"2026-07-06",end:"2026-07-17",time:"8:30am–5:00pm",status:"interested",cost:"$2,115–$2,350",age:"Grades 1-5",color:"#ec4899",notes:"2-week session. Conflicts with Stanford Wk 5 & Nueva.",url:"https://www.harker.org/summer/summer-camp-plus"},
+    {id:genId(),name:"Camp Plus 2-Week #3",org:"Harker",start:"2026-07-20",end:"2026-07-31",time:"8:30am–5:00pm",status:"interested",cost:"$2,115–$2,350",age:"Grades 1-5",color:"#ec4899",notes:"2-week session. Conflicts with Stanford CIT Wk 7 & Castilleja 2B.",url:"https://www.harker.org/summer/summer-camp-plus"},
+    {id:genId(),name:"Camp Plus Out N About (1 week)",org:"Harker",start:"2026-08-03",end:"2026-08-07",time:"8:30am–5:00pm",status:"interested",cost:"$950",age:"Grades 1-5",color:"#ec4899",notes:"Requires prior Harker session attendance. Conflicts with Castilleja 2B.",url:"https://www.harker.org/summer/summer-camp-plus"},
+    // Harker Swim
+    {id:genId(),name:"Swim Lessons (weekly)",org:"Harker",start:"2026-06-15",end:"2026-08-06",time:"Mon-Thu",status:"interested",cost:"$130/wk group, $185/wk private",age:"Ages 3+",color:"#ec4899",notes:"Group lessons ages 5-12. Can enroll individual weeks alongside other camps.",url:"https://www.harker.org/summer/swim-school"},
   ];
   saveData('camps');
 }
@@ -411,6 +419,11 @@ function seedSchools(){
     {id:genId(),name:"CastiCamp",org:"Castilleja",dates:"6/24-28 8:30-16:00\n7/1-5 8:30-16:00",age:"Grades 2-6",status:"interested",url:"https://www.castilleja.org/community/summer-at-casti/casticamp/casticamp-info",notes:""},
     {id:genId(),name:"Pasa Swim Team",org:"PASA",dates:"Schedule by evaluation",age:"All ages",status:"interested",url:"https://www.gomotionapp.com/About.jsp?team=pcpftsc",notes:"Contact Coach Dave Zapp: swim4zapp@dzswim.com / 408-230-9588"},
     {id:genId(),name:"Swim Lessons",org:"Alto Swim Club",dates:"Multiple sessions",age:"8+",status:"interested",url:"https://altoswimclub.com/swimlessons",notes:""},
+    {id:genId(),name:"Summer Camp Plus (4-week)",org:"Harker",dates:"6/22–7/17, 8:30am–5pm",age:"Grades 1-5",status:"interested",url:"https://www.harker.org/summer/summer-camp-plus",notes:"Full day $4,725 / Partial $4,075 / AM only $2,195-$2,395. Math+LA mornings, STEM/art/music/swim afternoons."},
+    {id:genId(),name:"Summer Camp Plus (2-week sessions)",org:"Harker",dates:"6/22–7/2 | 7/6–17 | 7/20–31",age:"Grades 1-5",status:"interested",url:"https://www.harker.org/summer/summer-camp-plus",notes:"$2,115–$2,350 per 2-week session. Lunch included."},
+    {id:genId(),name:"Out N About (1 week)",org:"Harker",dates:"8/3–7",age:"Grades 1-5",status:"interested",url:"https://www.harker.org/summer/summer-camp-plus",notes:"$950. Requires prior Harker session attendance."},
+    {id:genId(),name:"Swim School",org:"Harker",dates:"6/15–8/6, Mon-Thu weekly",age:"Ages 3+",status:"interested",url:"https://www.harker.org/summer/swim-school",notes:"Group $130/wk (ages 5-12) / Private $185/wk (all ages)"},
+    {id:genId(),name:"KinderCamp",org:"Harker",dates:"6/22–8/7",age:"Kindergarten",status:"interested",url:"https://www.harker.org/summer",notes:"Kindergarten prep program"},
   ];
   saveData('schools');
 }
