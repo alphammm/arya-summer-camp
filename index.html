@@ -150,6 +150,24 @@ a:hover{text-decoration:underline}
 .cat-local{background:rgba(59,130,246,.15);color:var(--blue)}
 .cat-travel{background:rgba(168,85,247,.15);color:var(--purple)}
 
+/* Drag & Drop */
+.drag-handle{width:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:grab;flex-shrink:0;color:var(--muted);opacity:.4;transition:.2s;user-select:none;font-size:.9rem;letter-spacing:1px;padding:4px 0}
+.drag-handle:hover{opacity:1;color:var(--accent)}
+.drag-handle:active{cursor:grabbing}
+.camp-card[draggable="true"],.list-card[draggable="true"]{transition:transform .15s,opacity .15s,border-color .2s}
+.camp-card.dragging,.list-card.dragging{opacity:.4;transform:scale(.97);border-color:var(--accent)!important}
+.camp-card.drag-over,.list-card.drag-over{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(245,158,11,.3)}
+.drag-placeholder{border:2px dashed var(--accent);border-radius:12px;background:rgba(245,158,11,.05);min-height:60px;margin:.375rem 0;transition:.2s}
+
+/* Popup edit mode */
+.popup-edit-bar{display:flex;gap:.5rem;justify-content:flex-end;margin-bottom:.8rem}
+.popup-editable{border:1px solid transparent;border-radius:6px;padding:2px 4px;transition:.2s}
+.popup-editable:hover{border-color:var(--border)}
+.popup-editable[contenteditable="true"]{border-color:var(--accent);background:rgba(245,158,11,.05);outline:none}
+.popup-editable[contenteditable="true"]:focus{box-shadow:0 0 0 2px rgba(245,158,11,.2)}
+.edit-hint{font-size:.7rem;color:var(--muted);text-align:center;margin-top:.5rem;opacity:0;transition:.2s}
+.modal:hover .edit-hint{opacity:1}
+
 @media(max-width:640px){
   .header h1{font-size:1.4rem}
   .toolbar{flex-direction:column;align-items:stretch}
@@ -263,16 +281,18 @@ a:hover{text-decoration:underline}
 <!-- ============ WELCOME MODAL (first visit) ============ -->
 <div class="modal-overlay" id="welcomeModal">
   <div class="modal" style="text-align:center">
+    <div class="popup-edit-bar"><button class="btn btn-sm btn-ghost" onclick="togglePopupEdit(this)">&#9998; Edit</button></div>
     <div style="font-size:3.5rem;margin-bottom:.5rem">&#9728;&#65039;&#127957;&#65039;</div>
-    <h2 style="margin-bottom:.3rem">Welcome to <span style="color:var(--accent2)">Arya</span>'s Summer Planner!</h2>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:1.2rem">One place for camps, schools, classes &amp; adventures</p>
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.2rem;text-align:left;font-size:.85rem;line-height:1.6">
-      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><span style="font-size:1.1rem">&#127957;&#65039;</span><span><strong>Summer Camps</strong> — 7 camps registered + Harker options, timeline &amp; conflict detection</span></div>
-      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><span style="font-size:1.1rem">&#127979;</span><span><strong>Summer School</strong> — Stanford, Nueva, Castilleja, Harker &amp; more</span></div>
-      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem"><span style="font-size:1.1rem">&#127912;</span><span><strong>Classes</strong> — 13 Palo Alto interest classes (art, math, music, swim...)</span></div>
-      <div style="display:flex;align-items:center;gap:.5rem"><span style="font-size:1.1rem">&#127961;&#65039;</span><span><strong>Places</strong> — 28 local spots &amp; travel destinations</span></div>
+    <h2 class="popup-editable" style="margin-bottom:.3rem">Welcome to <span style="color:var(--accent2)">Arya</span>'s Summer Planner!</h2>
+    <p class="popup-editable" style="color:var(--muted);font-size:.9rem;margin-bottom:1.2rem">One place for camps, schools, classes &amp; adventures</p>
+    <div id="welcomeFeatures" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1.2rem;text-align:left;font-size:.85rem;line-height:1.6">
+      <div class="popup-editable" draggable="false" style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;padding:4px;border-radius:6px"><span style="font-size:1.1rem">&#127957;&#65039;</span><span><strong>Summer Camps</strong> — 7 camps registered + Harker options, timeline &amp; conflict detection</span></div>
+      <div class="popup-editable" draggable="false" style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;padding:4px;border-radius:6px"><span style="font-size:1.1rem">&#127979;</span><span><strong>Summer School</strong> — Stanford, Nueva, Castilleja, Harker &amp; more</span></div>
+      <div class="popup-editable" draggable="false" style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;padding:4px;border-radius:6px"><span style="font-size:1.1rem">&#127912;</span><span><strong>Classes</strong> — 13 Palo Alto interest classes (art, math, music, swim...)</span></div>
+      <div class="popup-editable" draggable="false" style="display:flex;align-items:center;gap:.5rem;padding:4px;border-radius:6px"><span style="font-size:1.1rem">&#127961;&#65039;</span><span><strong>Places</strong> — 28 local spots &amp; travel destinations</span></div>
     </div>
-    <p style="color:var(--muted);font-size:.75rem;margin-bottom:1rem">All data saved locally in your browser. Add, edit, delete anytime.</p>
+    <p class="popup-editable" style="color:var(--muted);font-size:.75rem;margin-bottom:1rem">All data saved locally in your browser. Add, edit, delete anytime.</p>
+    <div class="edit-hint">Click "Edit" to modify text &amp; drag to reorder</div>
     <button class="btn btn-primary" onclick="closeWelcome()" style="width:100%;font-size:1rem;padding:.8rem">&#127775; Let's Plan Arya's Summer!</button>
   </div>
 </div>
@@ -280,16 +300,18 @@ a:hover{text-decoration:underline}
 <!-- ============ UPDATE MODAL (returning user, new version) ============ -->
 <div class="modal-overlay" id="updateModal">
   <div class="modal" style="text-align:center">
+    <div class="popup-edit-bar"><button class="btn btn-sm btn-ghost" onclick="togglePopupEdit(this)">&#9998; Edit</button></div>
     <div style="font-size:3rem;margin-bottom:.5rem">&#127381;</div>
-    <h2 style="margin-bottom:.5rem">New Data Available!</h2>
-    <p style="color:var(--muted);font-size:.9rem;margin-bottom:1rem">We've added <strong style="color:var(--accent)">Harker Summer Camp</strong> and updated program info. How would you like to update?</p>
+    <h2 class="popup-editable" style="margin-bottom:.5rem">New Data Available!</h2>
+    <p class="popup-editable" style="color:var(--muted);font-size:.9rem;margin-bottom:1rem">We've added <strong style="color:var(--accent)">Harker Summer Camp</strong> and updated program info. How would you like to update?</p>
     <div id="updateChangelog" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem;margin-bottom:1.2rem;text-align:left;font-size:.8rem;color:var(--muted);max-height:180px;overflow-y:auto">
-      <div style="font-weight:700;color:var(--text);margin-bottom:.4rem">What's new (v2):</div>
-      <div>&#8226; Harker Camp Plus — 4-week, 2-week &amp; 1-week sessions</div>
-      <div>&#8226; Harker Swim School — weekly lessons June–Aug</div>
-      <div>&#8226; Harker KinderCamp &amp; more in Summer School tab</div>
-      <div>&#8226; Conflict detection with existing schedule</div>
+      <div class="popup-editable" draggable="false" style="padding:3px 4px;border-radius:4px;font-weight:700;color:var(--text);margin-bottom:.4rem">What's new (v2):</div>
+      <div class="popup-editable" draggable="false" style="padding:3px 4px;border-radius:4px">&#8226; Harker Camp Plus — 4-week, 2-week &amp; 1-week sessions</div>
+      <div class="popup-editable" draggable="false" style="padding:3px 4px;border-radius:4px">&#8226; Harker Swim School — weekly lessons June–Aug</div>
+      <div class="popup-editable" draggable="false" style="padding:3px 4px;border-radius:4px">&#8226; Harker KinderCamp &amp; more in Summer School tab</div>
+      <div class="popup-editable" draggable="false" style="padding:3px 4px;border-radius:4px">&#8226; Conflict detection with existing schedule</div>
     </div>
+    <div class="edit-hint">Click "Edit" to modify text &amp; drag to reorder</div>
     <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
       <button class="btn btn-primary" onclick="doUpdate('merge')" style="flex:1;min-width:140px">&#128260; Merge (keep my edits + add new)</button>
       <button class="btn btn-ghost" onclick="doUpdate('reset')" style="flex:1;min-width:140px">&#128260; Full Reset (fresh start)</button>
@@ -651,10 +673,11 @@ function renderCamps(){
   document.getElementById('campsList').innerHTML=filtered.map(c=>{
     const s=new Date(c.start),e=new Date(c.end),d=Math.round((e-s)/864e5)+1,hc=conflicts.has(c.id);
     const ds=s.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+e.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    return `<div class="camp-card ${hc?'conflict':''}" onclick="openCampModal('${c.id}')">
-      <div class="camp-status ${c.status}"></div>
-      <div style="width:4px;height:36px;border-radius:2px;background:${c.color};flex-shrink:0"></div>
-      <div class="camp-info"><div class="camp-name">${c.name}</div>
+    return `<div class="camp-card ${hc?'conflict':''}" draggable="true" data-id="${c.id}" data-list="camps">
+      <div class="drag-handle" onmousedown="event.stopPropagation()">&#8942;&#8942;</div>
+      <div class="camp-status ${c.status}" onclick="openCampModal('${c.id}')"></div>
+      <div style="width:4px;height:36px;border-radius:2px;background:${c.color};flex-shrink:0" onclick="openCampModal('${c.id}')"></div>
+      <div class="camp-info" onclick="openCampModal('${c.id}')"><div class="camp-name">${c.name}</div>
         <div class="camp-org">${c.org||''}${c.age?' &middot; '+c.age:''}</div>
         <div class="camp-meta">
           <span>&#128197; ${ds} (${d}d)</span><span>&#128336; ${c.time||'TBD'}</span>
@@ -663,6 +686,7 @@ function renderCamps(){
           ${hc?'<span style="color:var(--red)">&#9888;&#65039; Conflict</span>':''}
         </div></div><span class="badge ${c.status}">${c.status}</span></div>`;
   }).join('');
+  initDragDrop('campsList','camps',renderCamps);
 }
 
 // Camp modal
@@ -711,9 +735,10 @@ function renderSchools(){
   if(!list.length){document.getElementById('schoolList').innerHTML='<div class="empty"><div class="icon">&#127979;</div>No programs yet</div>';return}
   const statusColors={registered:'var(--green)',waitlisted:'var(--orange)',interested:'var(--blue)',completed:'var(--purple)'};
   document.getElementById('schoolList').innerHTML=list.map(s=>`
-    <div class="list-card" onclick="openSchoolModal('${s.id}')" style="cursor:pointer">
-      <div class="icon-circle" style="background:rgba(59,130,246,.15);color:var(--blue)">&#127979;</div>
-      <div class="card-info">
+    <div class="list-card" draggable="true" data-id="${s.id}" data-list="schools" style="cursor:pointer">
+      <div class="drag-handle" onmousedown="event.stopPropagation()">&#8942;&#8942;</div>
+      <div class="icon-circle" style="background:rgba(59,130,246,.15);color:var(--blue)" onclick="openSchoolModal('${s.id}')">&#127979;</div>
+      <div class="card-info" onclick="openSchoolModal('${s.id}')">
         <div class="card-title">${s.name}</div>
         <div class="card-sub">${s.org}${s.age?' &middot; '+s.age:''}</div>
         <div class="card-meta">
@@ -724,6 +749,7 @@ function renderSchools(){
       </div>
       <span class="badge ${s.status}">${s.status}</span>
     </div>`).join('');
+  initDragDrop('schoolList','schools',renderSchools);
 }
 function openSchoolModal(id){
   const m=document.getElementById('schoolModal'),isE=!!id;
@@ -768,9 +794,10 @@ function renderClasses(){
   if(state.classFilter!=='all')list=list.filter(c=>c.type===state.classFilter);
   if(!list.length){document.getElementById('classesList').innerHTML='<div class="empty"><div class="icon">&#127912;</div>No classes found</div>';return}
   document.getElementById('classesList').innerHTML=list.map(c=>`
-    <div class="list-card" onclick="openClassModal('${c.id}')" style="cursor:pointer">
-      <div class="icon-circle" style="background:rgba(251,191,36,.1);color:var(--accent)">${typeIcons[c.type]||'&#128218;'}</div>
-      <div class="card-info">
+    <div class="list-card" draggable="true" data-id="${c.id}" data-list="classes" style="cursor:pointer">
+      <div class="drag-handle" onmousedown="event.stopPropagation()">&#8942;&#8942;</div>
+      <div class="icon-circle" style="background:rgba(251,191,36,.1);color:var(--accent)" onclick="openClassModal('${c.id}')">${typeIcons[c.type]||'&#128218;'}</div>
+      <div class="card-info" onclick="openClassModal('${c.id}')">
         <div class="card-title">${c.name}</div>
         <div class="card-meta">
           <span>&#128205; ${c.addr||'N/A'}</span>
@@ -780,6 +807,7 @@ function renderClasses(){
       </div>
       <span class="type-badge ${typeCatClass[c.type]||''}">${typeLabels[c.type]||c.type}</span>
     </div>`).join('');
+  initDragDrop('classesList','classes',renderClasses);
 }
 function openClassModal(id){
   const m=document.getElementById('classModal'),isE=!!id;
@@ -823,9 +851,10 @@ function renderPlaces(){
     const isTravel=p.cat==='travel';
     const icon=isTravel?'&#9992;&#65039;':'&#128205;';
     const catClass=isTravel?'cat-travel':'cat-local';
-    return `<div class="list-card" onclick="openPlaceModal('${p.id}')" style="cursor:pointer">
-      <div class="icon-circle" style="background:${isTravel?'rgba(168,85,247,.15)':'rgba(59,130,246,.15)'};color:${isTravel?'var(--purple)':'var(--blue)'}">${icon}</div>
-      <div class="card-info">
+    return `<div class="list-card" draggable="true" data-id="${p.id}" data-list="places" style="cursor:pointer">
+      <div class="drag-handle" onmousedown="event.stopPropagation()">&#8942;&#8942;</div>
+      <div class="icon-circle" style="background:${isTravel?'rgba(168,85,247,.15)':'rgba(59,130,246,.15)'};color:${isTravel?'var(--purple)':'var(--blue)'}" onclick="openPlaceModal('${p.id}')">${icon}</div>
+      <div class="card-info" onclick="openPlaceModal('${p.id}')">
         <div class="card-title">${p.name} ${p.visited==='yes'?'<span style="color:var(--green)">&#10003;</span>':''}</div>
         ${p.addr?`<div class="card-meta"><span>&#128205; ${p.addr}</span></div>`:''}
         ${p.notes?`<div class="card-meta"><span>&#128221; ${p.notes}</span></div>`:''}
@@ -833,6 +862,7 @@ function renderPlaces(){
       <span class="type-badge ${catClass}">${isTravel?'Travel':'Local'}</span>
     </div>`;
   }).join('');
+  initDragDrop('placesList','places',renderPlaces);
 }
 function openPlaceModal(id){
   const m=document.getElementById('placeModal'),isE=!!id;
@@ -861,6 +891,183 @@ function deletePlace(){const id=document.getElementById('plEditId').value;if(!id
 // ===== CLOSE MODALS =====
 document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('active')})});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('active'))});
+
+// ===== DRAG & DROP ENGINE =====
+function initDragDrop(containerId, stateKey, renderFn) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let dragId = null;
+  let placeholder = null;
+
+  container.querySelectorAll('[draggable="true"]').forEach(card => {
+    card.addEventListener('dragstart', e => {
+      // Only allow drag from handle
+      const handle = card.querySelector('.drag-handle');
+      const rect = handle.getBoundingClientRect();
+      if (e.clientX < rect.left - 10 || e.clientX > rect.right + 10 || e.clientY < rect.top - 10 || e.clientY > rect.bottom + 10) {
+        e.preventDefault(); return;
+      }
+      dragId = card.dataset.id;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', dragId);
+      // Create placeholder
+      placeholder = document.createElement('div');
+      placeholder.className = 'drag-placeholder';
+      placeholder.style.height = card.offsetHeight + 'px';
+      setTimeout(() => { card.style.display = 'none'; }, 0);
+    });
+
+    card.addEventListener('dragend', e => {
+      card.classList.remove('dragging');
+      card.style.display = '';
+      if (placeholder && placeholder.parentNode) {
+        // Find new position
+        const cards = [...container.querySelectorAll('[data-id]')];
+        const placeholderIdx = [...container.children].indexOf(placeholder);
+        placeholder.remove();
+
+        // Reorder state
+        const arr = state[stateKey];
+        const fromIdx = arr.findIndex(x => x.id === dragId);
+        if (fromIdx < 0) return;
+        const [item] = arr.splice(fromIdx, 1);
+
+        // Calculate target index in full array
+        const visibleIds = cards.filter(c => c.style.display !== 'none').map(c => c.dataset.id);
+        // Insert before the card that's at placeholderIdx
+        let toIdx = arr.length; // default: end
+        const siblings = [...container.children].filter(c => c.dataset && c.dataset.id && c.dataset.id !== dragId);
+        if (placeholderIdx <= 0) {
+          const firstId = siblings[0]?.dataset?.id;
+          toIdx = firstId ? arr.findIndex(x => x.id === firstId) : 0;
+        } else {
+          // Find the card before placeholder
+          let beforeCard = null;
+          for (let i = placeholderIdx - 1; i >= 0; i--) {
+            const child = container.children[i];
+            if (child.dataset && child.dataset.id && child.dataset.id !== dragId) { beforeCard = child; break; }
+          }
+          if (beforeCard) {
+            toIdx = arr.findIndex(x => x.id === beforeCard.dataset.id) + 1;
+          }
+        }
+        if (toIdx < 0) toIdx = 0;
+        arr.splice(toIdx, 0, item);
+        saveData(stateKey);
+        renderFn();
+      }
+      dragId = null;
+      container.querySelectorAll('.drag-over').forEach(c => c.classList.remove('drag-over'));
+    });
+  });
+
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (!placeholder) return;
+
+    const afterElement = getDragAfterElement(container, e.clientY);
+    if (afterElement) {
+      container.insertBefore(placeholder, afterElement);
+    } else {
+      container.appendChild(placeholder);
+    }
+  });
+}
+
+function getDragAfterElement(container, y) {
+  const elements = [...container.querySelectorAll('[data-id]:not(.dragging)')];
+  let closest = null, closestOffset = Number.NEGATIVE_INFINITY;
+  for (const el of elements) {
+    const box = el.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closestOffset) {
+      closestOffset = offset;
+      closest = el;
+    }
+  }
+  return closest;
+}
+
+// ===== POPUP EDIT (contenteditable toggle) =====
+function togglePopupEdit(btn) {
+  const modal = btn.closest('.modal');
+  const editables = modal.querySelectorAll('.popup-editable');
+  const isEditing = editables[0]?.contentEditable === 'true';
+
+  if (isEditing) {
+    // Save: turn off editing
+    editables.forEach(el => {
+      el.contentEditable = 'false';
+      el.draggable = false;
+    });
+    btn.innerHTML = '&#9998; Edit';
+    btn.classList.remove('btn-primary');
+    btn.classList.add('btn-ghost');
+    // Save popup content to localStorage
+    const modalId = modal.closest('.modal-overlay').id;
+    const content = [...editables].map(el => el.innerHTML);
+    localStorage.setItem('arya-popup-' + modalId, JSON.stringify(content));
+  } else {
+    // Enter edit mode
+    editables.forEach(el => {
+      el.contentEditable = 'true';
+      el.draggable = false;
+    });
+    btn.innerHTML = '&#10003; Done';
+    btn.classList.remove('btn-ghost');
+    btn.classList.add('btn-primary');
+    // Enable drag reorder within popup feature lists
+    enablePopupDrag(modal);
+  }
+}
+
+function enablePopupDrag(modal) {
+  const containers = modal.querySelectorAll('#welcomeFeatures, #updateChangelog');
+  containers.forEach(container => {
+    const items = container.querySelectorAll('.popup-editable');
+    items.forEach(item => {
+      item.draggable = true;
+      item.style.cursor = 'grab';
+      item.addEventListener('dragstart', e => {
+        e.dataTransfer.effectAllowed = 'move';
+        item.style.opacity = '.4';
+        item._dragSource = true;
+      });
+      item.addEventListener('dragend', () => {
+        item.style.opacity = '';
+        item._dragSource = false;
+      });
+      item.addEventListener('dragover', e => {
+        e.preventDefault();
+        const source = container.querySelector('[style*="opacity: 0.4"]') || [...container.querySelectorAll('.popup-editable')].find(x => x._dragSource);
+        if (source && source !== item) {
+          const rect = item.getBoundingClientRect();
+          if (e.clientY < rect.top + rect.height / 2) {
+            container.insertBefore(source, item);
+          } else {
+            container.insertBefore(source, item.nextSibling);
+          }
+        }
+      });
+    });
+  });
+}
+
+// Restore saved popup edits
+function restorePopupEdits() {
+  ['welcomeModal', 'updateModal'].forEach(modalId => {
+    const saved = localStorage.getItem('arya-popup-' + modalId);
+    if (!saved) return;
+    try {
+      const content = JSON.parse(saved);
+      const editables = document.querySelectorAll('#' + modalId + ' .popup-editable');
+      content.forEach((html, i) => { if (editables[i]) editables[i].innerHTML = html; });
+    } catch(e) {}
+  });
+}
+restorePopupEdits();
 
 // ===== INIT =====
 loadAll();renderCamps();renderSchools();renderClasses();renderPlaces();
