@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arya's Summer Planner</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--card:#222536;--border:#2e3348;
+  --text:#e8eaf0;--muted:#8b90a5;--accent:#f59e0b;--accent2:#fbbf24;
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4;
+  --pink:#ec4899;--orange:#f97316;
+}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+.header{background:linear-gradient(135deg,#1e1b4b,#312e81,#4c1d95);padding:2rem;text-align:center;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.header h1{font-size:2rem;font-weight:800;position:relative}
+.header h1 span{color:var(--accent2)}
+.header p{color:rgba(255,255,255,.7);margin-top:.5rem;position:relative}
+.star{position:absolute;font-size:1.5rem;animation:twinkle 2s infinite}
+.star:nth-child(1){top:15%;left:10%;animation-delay:0s}
+.star:nth-child(2){top:25%;right:15%;animation-delay:.5s}
+.star:nth-child(3){bottom:20%;left:20%;animation-delay:1s}
+.star:nth-child(4){bottom:15%;right:10%;animation-delay:1.5s}
+@keyframes twinkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+
+/* Main Tabs */
+.main-tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;overflow-x:auto}
+.main-tab{padding:1rem 1.5rem;font-size:.9rem;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:3px solid transparent;transition:.2s;white-space:nowrap}
+.main-tab:hover{color:var(--text)}
+.main-tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.container{max-width:1200px;margin:0 auto;padding:1.5rem}
+.toolbar{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.year-nav{display:flex;align-items:center;gap:.5rem}
+.year-nav button{background:var(--card);border:1px solid var(--border);color:var(--text);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:.2s}
+.year-nav button:hover{background:var(--accent);color:#000}
+.year-nav .year{font-size:1.5rem;font-weight:700;min-width:80px;text-align:center;color:var(--accent2)}
+.toolbar .spacer{flex:1}
+
+.btn{padding:.6rem 1.2rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:.85rem;transition:.2s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-primary{background:var(--accent);color:#000}
+.btn-primary:hover{background:var(--accent2)}
+.btn-sm{padding:.4rem .8rem;font-size:.8rem}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:transparent;border:1px solid var(--red);color:var(--red)}
+.btn-danger:hover{background:var(--red);color:#fff}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
+.stat-card .num{font-size:1.8rem;font-weight:800}
+.stat-card .label{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+.stat-card.total .num{color:var(--accent2)}
+.stat-card.registered .num{color:var(--green)}
+.stat-card.waitlisted .num{color:var(--orange)}
+.stat-card.interested .num{color:var(--blue)}
+.stat-card.completed .num{color:var(--purple)}
+.stat-card.weeks .num{color:var(--cyan)}
+
+.section-title{font-size:1.1rem;font-weight:700;margin:1.5rem 0 1rem;display:flex;align-items:center;gap:.5rem}
+
+/* Timeline */
+.timeline-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem;overflow-x:auto}
+.timeline-header{display:flex;margin-bottom:.3rem;padding-left:140px}
+.timeline-header .week{flex:1;min-width:60px;text-align:center;font-size:.65rem;color:var(--muted)}
+.timeline-row{display:flex;align-items:center;margin:.3rem 0;min-height:28px}
+.timeline-label{width:140px;flex-shrink:0;font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:.5rem}
+.timeline-track{flex:1;display:flex;position:relative;height:24px}
+.timeline-track .week-slot{flex:1;min-width:60px;border-left:1px solid var(--border)}
+.timeline-block{position:absolute;height:22px;border-radius:4px;top:1px;display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#000;cursor:pointer;transition:.2s;z-index:1}
+.timeline-block:hover{transform:scaleY(1.3);z-index:2}
+.conflict-marker{position:absolute;top:-2px;right:-2px;width:10px;height:10px;background:var(--red);border-radius:50%;border:2px solid var(--card);z-index:3}
+
+/* Cards */
+.camps-grid{display:flex;flex-direction:column;gap:.75rem}
+.camp-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;transition:.2s;position:relative;cursor:pointer}
+.camp-card:hover{border-color:var(--accent);transform:translateX(4px)}
+.camp-card.conflict{border-color:var(--red);border-style:dashed}
+.camp-status{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.camp-status.registered{background:var(--green)}
+.camp-status.waitlisted{background:var(--orange)}
+.camp-status.interested{background:var(--blue)}
+.camp-status.completed{background:var(--purple)}
+.camp-status.cancelled{background:var(--red)}
+.camp-info{flex:1;min-width:0}
+.camp-name{font-weight:700;font-size:.95rem}
+.camp-org{color:var(--muted);font-size:.8rem;margin-top:.15rem}
+.camp-meta{display:flex;gap:1rem;margin-top:.4rem;flex-wrap:wrap}
+.camp-meta span{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.3rem}
+.badge{padding:.2rem .5rem;border-radius:4px;font-size:.7rem;font-weight:600}
+.badge.registered{background:rgba(34,197,94,.15);color:var(--green)}
+.badge.waitlisted{background:rgba(249,115,22,.15);color:var(--orange)}
+.badge.interested{background:rgba(59,130,246,.15);color:var(--blue)}
+.badge.completed{background:rgba(168,85,247,.15);color:var(--purple)}
+.badge.cancelled{background:rgba(239,68,68,.15);color:var(--red)}
+
+/* List cards for 兴趣班 / 游乐场 / Summer School */
+.list-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;display:flex;align-items:flex-start;gap:1rem;transition:.2s;position:relative}
+.list-card:hover{border-color:var(--accent);transform:translateX(4px)}
+.list-card .icon-circle{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.list-card .card-info{flex:1;min-width:0}
+.list-card .card-title{font-weight:700;font-size:.95rem}
+.list-card .card-sub{color:var(--muted);font-size:.8rem;margin-top:.2rem}
+.list-card .card-meta{display:flex;gap:1rem;margin-top:.4rem;flex-wrap:wrap}
+.list-card .card-meta span{font-size:.75rem;color:var(--muted);display:flex;align-items:center;gap:.3rem}
+.list-card .card-actions{display:flex;gap:.5rem;flex-shrink:0;align-self:center}
+.type-badge{padding:.2rem .6rem;border-radius:4px;font-size:.7rem;font-weight:600;flex-shrink:0}
+
+/* Filter */
+.filter-tabs{display:flex;gap:.5rem;flex-wrap:wrap}
+.filter-tab{padding:.4rem .8rem;border-radius:6px;font-size:.8rem;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:.2s}
+.filter-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
+
+/* Search */
+.search-box{padding:.5rem .8rem;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.85rem;width:200px;font-family:inherit}
+.search-box:focus{outline:none;border-color:var(--accent)}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;padding:1.5rem}
+.modal h2{font-size:1.2rem;margin-bottom:1rem}
+.form-group{margin-bottom:1rem}
+.form-group label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.3rem;font-weight:600}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:.6rem .8rem;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.9rem;font-family:inherit}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:60px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-actions{display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem}
+
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.empty .icon{font-size:3rem;margin-bottom:1rem}
+
+/* Category colors */
+.cat-art{background:rgba(236,72,153,.15);color:var(--pink)}
+.cat-math{background:rgba(59,130,246,.15);color:var(--blue)}
+.cat-music{background:rgba(168,85,247,.15);color:var(--purple)}
+.cat-dance{background:rgba(249,115,22,.15);color:var(--orange)}
+.cat-swim{background:rgba(6,182,212,.15);color:var(--cyan)}
+.cat-martial{background:rgba(239,68,68,.15);color:var(--red)}
+.cat-academic{background:rgba(34,197,94,.15);color:var(--green)}
+.cat-sports{background:rgba(251,191,36,.15);color:var(--accent2)}
+.cat-local{background:rgba(59,130,246,.15);color:var(--blue)}
+.cat-travel{background:rgba(168,85,247,.15);color:var(--purple)}
+
+@media(max-width:640px){
+  .header h1{font-size:1.4rem}
+  .toolbar{flex-direction:column;align-items:stretch}
+  .form-row{grid-template-columns:1fr}
+  .camp-card,.list-card{flex-direction:column;align-items:flex-start}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .search-box{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="star">&#11088;</span>
+  <span class="star">&#127775;</span>
+  <span class="star">&#9728;&#65039;</span>
+  <span class="star">&#127774;</span>
+  <h1>&#9728;&#65039; <span>Arya</span>'s Summer Planner</h1>
+  <p>Camps, classes, adventures &mdash; all in one place</p>
+</div>
+
+<div class="main-tabs" id="mainTabs">
+  <button class="main-tab active" data-tab="camps">&#127957;&#65039; Summer Camps</button>
+  <button class="main-tab" data-tab="school">&#127979; Summer School</button>
+  <button class="main-tab" data-tab="classes">&#127912; Classes</button>
+  <button class="main-tab" data-tab="places">&#127961;&#65039; Places</button>
+</div>
+
+<!-- ============ TAB 1: SUMMER CAMPS ============ -->
+<div class="tab-content active" id="tab-camps">
+<div class="container">
+  <div class="toolbar">
+    <div class="year-nav">
+      <button onclick="changeYear(-1)">&#8249;</button>
+      <div class="year" id="currentYear">2026</div>
+      <button onclick="changeYear(1)">&#8250;</button>
+    </div>
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-filter="all">All</button>
+      <button class="filter-tab" data-filter="registered">Registered</button>
+      <button class="filter-tab" data-filter="waitlisted">Waitlisted</button>
+      <button class="filter-tab" data-filter="interested">Interested</button>
+      <button class="filter-tab" data-filter="completed">Completed</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openCampModal()">+ Add Camp</button>
+    <button class="btn btn-ghost" onclick="exportCamps()">&#128229; Export</button>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="section-title">&#128197; Timeline</div>
+  <div class="timeline-bar" id="timeline"></div>
+  <div class="section-title">&#127957;&#65039; Camps</div>
+  <div class="camps-grid" id="campsList"></div>
+</div>
+</div>
+
+<!-- ============ TAB 2: SUMMER SCHOOL ============ -->
+<div class="tab-content" id="tab-school">
+<div class="container">
+  <div class="toolbar">
+    <div class="section-title" style="margin:0">&#127979; Summer School Programs</div>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="openSchoolModal()">+ Add Program</button>
+  </div>
+  <div class="camps-grid" id="schoolList"></div>
+</div>
+</div>
+
+<!-- ============ TAB 3: INTEREST CLASSES ============ -->
+<div class="tab-content" id="tab-classes">
+<div class="container">
+  <div class="toolbar">
+    <div class="section-title" style="margin:0">&#127912; Palo Alto Classes</div>
+    <div class="spacer"></div>
+    <input type="text" class="search-box" id="classSearch" placeholder="Search classes..." oninput="renderClasses()">
+    <button class="btn btn-primary" onclick="openClassModal()">+ Add Class</button>
+  </div>
+  <div class="filter-tabs" id="classFilterTabs" style="margin-bottom:1rem">
+    <button class="filter-tab active" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="art">Art</button>
+    <button class="filter-tab" data-filter="math">Math</button>
+    <button class="filter-tab" data-filter="music">Music</button>
+    <button class="filter-tab" data-filter="dance">Dance</button>
+    <button class="filter-tab" data-filter="swim">Swim</button>
+    <button class="filter-tab" data-filter="martial">Martial Arts</button>
+    <button class="filter-tab" data-filter="academic">Academic</button>
+    <button class="filter-tab" data-filter="sports">Sports</button>
+  </div>
+  <div class="camps-grid" id="classesList"></div>
+</div>
+</div>
+
+<!-- ============ TAB 4: PLACES ============ -->
+<div class="tab-content" id="tab-places">
+<div class="container">
+  <div class="toolbar">
+    <div class="section-title" style="margin:0">&#127961;&#65039; Places &amp; Adventures</div>
+    <div class="spacer"></div>
+    <input type="text" class="search-box" id="placeSearch" placeholder="Search places..." oninput="renderPlaces()">
+    <button class="btn btn-primary" onclick="openPlaceModal()">+ Add Place</button>
+  </div>
+  <div class="filter-tabs" id="placeFilterTabs" style="margin-bottom:1rem">
+    <button class="filter-tab active" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="local">Local</button>
+    <button class="filter-tab" data-filter="travel">Travel</button>
+  </div>
+  <div class="camps-grid" id="placesList"></div>
+</div>
+</div>
+
+<!-- ============ CAMP MODAL ============ -->
+<div class="modal-overlay" id="campModal">
+  <div class="modal">
+    <h2 id="campModalTitle">Add Camp</h2>
+    <input type="hidden" id="campEditId">
+    <div class="form-group"><label>Camp Name *</label><input type="text" id="cfName" placeholder="e.g. Camp Cardinal Week 4"></div>
+    <div class="form-group"><label>Organization</label><input type="text" id="cfOrg" placeholder="e.g. Stanford, Castilleja"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Start Date *</label><input type="date" id="cfStart"></div>
+      <div class="form-group"><label>End Date *</label><input type="date" id="cfEnd"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Time</label><input type="text" id="cfTime" placeholder="8:30am - 4:00pm"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="cfStatus"><option value="interested">Interested</option><option value="registered">Registered</option><option value="waitlisted">Waitlisted</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Cost</label><input type="text" id="cfCost" placeholder="$500"></div>
+      <div class="form-group"><label>Age / Grade</label><input type="text" id="cfAge" placeholder="Ages 7-9"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Color</label>
+        <select id="cfColor"><option value="#f59e0b">Amber</option><option value="#22c55e">Green</option><option value="#3b82f6">Blue</option><option value="#a855f7">Purple</option><option value="#ec4899">Pink</option><option value="#06b6d4">Cyan</option><option value="#f97316">Orange</option><option value="#ef4444">Red</option></select>
+      </div>
+      <div class="form-group"><label>Website</label><input type="url" id="cfUrl" placeholder="https://..."></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="cfNotes" placeholder="Additional details..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeCampModal()">Cancel</button>
+      <button class="btn btn-danger" id="campDeleteBtn" onclick="deleteCamp()" style="display:none">Delete</button>
+      <button class="btn btn-primary" onclick="saveCamp()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ SCHOOL MODAL ============ -->
+<div class="modal-overlay" id="schoolModal">
+  <div class="modal">
+    <h2 id="schoolModalTitle">Add Summer School</h2>
+    <input type="hidden" id="schoolEditId">
+    <div class="form-group"><label>Program Name *</label><input type="text" id="sfName"></div>
+    <div class="form-group"><label>Organization</label><input type="text" id="sfOrg"></div>
+    <div class="form-group"><label>Schedule / Dates</label><textarea id="sfDates" placeholder="e.g. July 8-12, 8:30-16:00"></textarea></div>
+    <div class="form-row">
+      <div class="form-group"><label>Age / Grade</label><input type="text" id="sfAge"></div>
+      <div class="form-group"><label>Status</label>
+        <select id="sfStatus"><option value="interested">Interested</option><option value="registered">Registered</option><option value="waitlisted">Waitlisted</option><option value="completed">Completed</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Website</label><input type="url" id="sfUrl"></div>
+    <div class="form-group"><label>Notes</label><textarea id="sfNotes"></textarea></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeSchoolModal()">Cancel</button>
+      <button class="btn btn-danger" id="schoolDeleteBtn" onclick="deleteSchool()" style="display:none">Delete</button>
+      <button class="btn btn-primary" onclick="saveSchool()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CLASS MODAL ============ -->
+<div class="modal-overlay" id="classModal">
+  <div class="modal">
+    <h2 id="classModalTitle">Add Class</h2>
+    <input type="hidden" id="clEditId">
+    <div class="form-group"><label>Name *</label><input type="text" id="clName"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Type / Category *</label>
+        <select id="clType"><option value="art">Art</option><option value="math">Math</option><option value="music">Music</option><option value="dance">Dance</option><option value="swim">Swim</option><option value="martial">Martial Arts</option><option value="academic">Academic</option><option value="sports">Sports</option></select>
+      </div>
+      <div class="form-group"><label>Drive Time</label><input type="text" id="clDrive" placeholder="5 min"></div>
+    </div>
+    <div class="form-group"><label>Address</label><input type="text" id="clAddr"></div>
+    <div class="form-group"><label>Website</label><input type="url" id="clUrl"></div>
+    <div class="form-group"><label>Notes</label><textarea id="clNotes"></textarea></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeClassModal()">Cancel</button>
+      <button class="btn btn-danger" id="classDeleteBtn" onclick="deleteClass()" style="display:none">Delete</button>
+      <button class="btn btn-primary" onclick="saveClass()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PLACE MODAL ============ -->
+<div class="modal-overlay" id="placeModal">
+  <div class="modal">
+    <h2 id="placeModalTitle">Add Place</h2>
+    <input type="hidden" id="plEditId">
+    <div class="form-group"><label>Name *</label><input type="text" id="plName"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Category</label>
+        <select id="plCat"><option value="local">Local</option><option value="travel">Travel / Day Trip</option></select>
+      </div>
+      <div class="form-group"><label>Visited?</label>
+        <select id="plVisited"><option value="no">Not Yet</option><option value="yes">Visited</option></select>
+      </div>
+    </div>
+    <div class="form-group"><label>Address</label><input type="text" id="plAddr"></div>
+    <div class="form-group"><label>Notes</label><textarea id="plNotes"></textarea></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closePlaceModal()">Cancel</button>
+      <button class="btn btn-danger" id="placeDeleteBtn" onclick="deletePlace()" style="display:none">Delete</button>
+      <button class="btn btn-primary" onclick="savePlace()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+const LS = {
+  camps: 'arya-camps',
+  schools: 'arya-schools',
+  classes: 'arya-classes',
+  places: 'arya-places'
+};
+let state = { year:2026, filter:'all', classFilter:'all', placeFilter:'all', camps:[], schools:[], classes:[], places:[] };
+function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+
+function loadAll(){
+  for(const k of ['camps','schools','classes','places']){
+    try{ const d=localStorage.getItem(LS[k]); if(d) state[k]=JSON.parse(d); }catch(e){}
+  }
+  if(!state.camps.length) seedCamps();
+  if(!state.schools.length) seedSchools();
+  if(!state.classes.length) seedClasses();
+  if(!state.places.length) seedPlaces();
+}
+function saveData(k){ localStorage.setItem(LS[k], JSON.stringify(state[k])); }
+
+// ===== SEED DATA =====
+function seedCamps(){
+  state.camps=[
+    {id:genId(),name:"Swim Lessons — Summer Swim School",org:"Alto Swim Club",start:"2026-06-08",end:"2026-06-11",time:"10:00am–1:00pm (25 min)",status:"registered",cost:"",age:"",color:"#06b6d4",notes:"Session 1, multiple levels available",url:"https://altoswimclub.com/swimlessons"},
+    {id:genId(),name:"Session 1A",org:"Castilleja",start:"2026-06-15",end:"2026-06-26",time:"8:30am–4:00pm",status:"registered",cost:"",age:"Grades 2-6",color:"#a855f7",notes:"Extended day 4-6pm available",url:"https://www.castilleja.org/community/summer-at-casti/casticamp/casticamp-info"},
+    {id:genId(),name:"Camp Cardinal Week 4 (Ages 7-9)",org:"Stanford",start:"2026-06-29",end:"2026-07-03",time:"8:30am–4:00pm",status:"registered",cost:"",age:"Ages 7-9",color:"#ef4444",notes:"Non-Stanford Affiliate",url:"https://stanfordcampcardinal.totalcamps.com/About%20Us"},
+    {id:genId(),name:"Camp Cardinal Week 5 (Ages 7-9)",org:"Stanford",start:"2026-07-06",end:"2026-07-10",time:"8:30am–4:00pm",status:"registered",cost:"",age:"Ages 7-9",color:"#ef4444",notes:"Non-Stanford Affiliate",url:"https://stanfordcampcardinal.totalcamps.com/About%20Us"},
+    {id:genId(),name:"Feel the Rhythm! Feel the Rhyme! (Week 4)",org:"Nueva",start:"2026-07-13",end:"2026-07-17",time:"9:00am–4:00pm",status:"registered",cost:"",age:"Grades 1-4",color:"#22c55e",notes:"Early Day 8-9am / Extended Day 4-5:30pm",url:"https://www.hisawyer.com/the-nueva-school/schedules"},
+    {id:genId(),name:"CIT Week 7",org:"Stanford",start:"2026-07-20",end:"2026-07-24",time:"8:30am–4:00pm",status:"registered",cost:"",age:"",color:"#f97316",notes:"Counselor-in-Training",url:"https://stanfordcampcardinal.totalcamps.com/About%20Us"},
+    {id:genId(),name:"Session 2B",org:"Castilleja",start:"2026-07-27",end:"2026-08-07",time:"8:30am–4:00pm",status:"registered",cost:"",age:"Grades 2-6",color:"#a855f7",notes:"Extended day 4-6pm available",url:"https://www.castilleja.org/community/summer-at-casti/casticamp/casticamp-info"},
+  ];
+  saveData('camps');
+}
+
+function seedSchools(){
+  state.schools=[
+    {id:genId(),name:"Camp Cardinal",org:"Stanford",dates:"7/8-12 8:30-16:00\n7/15-19 8:30-16:00\n7/29-8/2 8:30-16:00",age:"5-12",status:"interested",url:"https://stanfordcampcardinal.totalcamps.com/About%20Us",notes:""},
+    {id:genId(),name:"Basketball Camp",org:"Stanford",dates:"6/18-21 8:45-15:45\n7/22-25 8:45-15:45",age:"8-13",status:"interested",url:"https://stanfordgirlsbasketballcamps.totalcamps.com/About%20Us",notes:"Girls basketball"},
+    {id:genId(),name:"Nueva Summer",org:"Nueva",dates:"7/15-19 9:00-16:00",age:"Grades 1-4",status:"interested",url:"https://www.hisawyer.com/the-nueva-school/schedules?sched_ids%5B%5D=187995&schedule_id=camps",notes:""},
+    {id:genId(),name:"CastiCamp",org:"Castilleja",dates:"6/24-28 8:30-16:00\n7/1-5 8:30-16:00",age:"Grades 2-6",status:"interested",url:"https://www.castilleja.org/community/summer-at-casti/casticamp/casticamp-info",notes:""},
+    {id:genId(),name:"Pasa Swim Team",org:"PASA",dates:"Schedule by evaluation",age:"All ages",status:"interested",url:"https://www.gomotionapp.com/About.jsp?team=pcpftsc",notes:"Contact Coach Dave Zapp: swim4zapp@dzswim.com / 408-230-9588"},
+    {id:genId(),name:"Swim Lessons",org:"Alto Swim Club",dates:"Multiple sessions",age:"8+",status:"interested",url:"https://altoswimclub.com/swimlessons",notes:""},
+  ];
+  saveData('schools');
+}
+
+function seedClasses(){
+  const typeMap={'绘画':'art','数学':'math','音乐':'music','舞蹈':'dance','游泳':'swim','武术':'martial','综合学科':'academic','综合学科(含coding）':'academic','数学、阅读':'math','足球':'sports'};
+  const typeIcons={art:'&#127912;',math:'&#128290;',music:'&#127925;',dance:'&#128131;',swim:'&#127946;',martial:'&#129354;',academic:'&#128218;',sports:'&#9917;'};
+  const raw=[
+    ["Art School of SF Bay (Mountain View)","绘画","2105 Old Middlefield Way D, Mountain View, CA 94043","6 min","https://www.artschoolsfbay.com/"],
+    ["OpMath","数学","719 Colorado Ave Suite 200, Palo Alto, CA 94303","6 min","https://www.opmath.com/"],
+    ["Mathnasium","数学","2510 W El Camino Real #4, Mountain View, CA 94040","7 min","https://www.mathnasium.com/math-centers/mountainviewlosaltos"],
+    ["Russian School of Mathematics","数学","490 W El Camino Real, Mountain View, CA 94041","9 min","https://www.mathschool.com/locations/mountain-view"],
+    ["Kumon Math and Reading","数学、阅读","2730 Middlefield Rd, Palo Alto, CA 94306","5 min","https://www.kumon.com/palo-alto/"],
+    ["World Martial Arts Palo Alto","武术","2134 Old Middlefield Way STE I, Mountain View, CA 94043","5 min","https://www.wmapaloalto.com/"],
+    ["West Valley Dance Company","舞蹈","1939 W El Camino Real, Mountain View, CA 94040","9 min","https://www.westvalleydanceco.com/locations/mountain-view/"],
+    ["Hope Street Music Studios","音乐","2224 Old Middlefield Way E, Mountain View, CA 94043","5 min","https://www.hopestreetmusicstudios.com/"],
+    ["Flying Fish Swim School","游泳","280 Polaris Ave, Mountain View, CA 94043","8 min","https://flyingfishswim.com/"],
+    ["The Tutoring Center","综合学科","1350 Grant Rd, Mountain View, CA 94040","11 min","https://www.tutoringcenter.com/academic-programs/"],
+    ["AJ Tutoring","综合学科","430 Cambridge Ave #110, Palo Alto, CA 94306","9 min","https://www.ajtutoring.com/"],
+    ["Best Brains Learning Center","综合学科(含coding）","994 W El Camino Real, Sunnyvale, CA 94087","11 min","https://bestbrains.com/"],
+    ["Light Soccer Camp","足球","480 E Meadow Dr, Palo Alto, CA 94306","5 min","https://www.lightsoccercamp.com/"],
+  ];
+  state.classes=raw.map(r=>({
+    id:genId(),name:r[0],type:typeMap[r[1]]||'academic',typeCn:r[1],addr:r[2],drive:r[3],url:r[4],notes:''
+  }));
+  saveData('classes');
+}
+
+function seedPlaces(){
+  const raw=[
+    ["Stanford Bookstore","519 Lasuen Mall, Stanford, CA 94305","local"],
+    ["Mitchell Park Library","3700 Middlefield Rd, Palo Alto, CA 94303","local"],
+    ["Children's Library","1276 Harriet St, Palo Alto, CA 94301","local"],
+    ["Palo Alto Junior Museum & Zoo","1451 Middlefield Rd, Palo Alto, CA 94301","local"],
+    ["Magical Bridge Playground","3700 Middlefield Rd, Palo Alto, CA 94306","local"],
+    ["Safari Run","1180 Kern Ave, Sunnyvale, CA 94085","local"],
+    ["SF Zoo","Sloat Blvd & Upper Great Hwy, San Francisco, CA 94132","local"],
+    ["Golfland","976 Blossom Hill Rd, San Jose, CA 95123","local"],
+    ["NorCal County Fair","Mission College Blvd, Santa Clara, CA 95054","local"],
+    ["The Plex","800 Embedded Way, San Jose, CA 95138","local"],
+    ["Happy Hollow Park & Zoo","748 Story Rd, San Jose, CA 95112","local"],
+    ["Children's Discovery Museum of San Jose","180 Woz Way, San Jose, CA 95110","local"],
+    ["Magic Mountain Playground","12 Airport Blvd, San Mateo, CA 94401","local"],
+    ["CuriOdyssey","1651 Coyote Point Dr, San Mateo, CA 94401","local"],
+    ["Jack Fischer Park","Abbott Ave & Pollard Rd, Campbell, CA 95008","local"],
+    ["Tahoe","","travel"],
+    ["Big Sur","","travel"],
+    ["Santa Barbara","","travel"],
+    ["Beaches south of Half Moon Bay","","travel"],
+    ["Bodega Bay & Stinson Beach","","travel"],
+    ["Muir Woods","","travel"],
+    ["Yosemite","","travel"],
+    ["Shasta","","travel"],
+    ["Mt. Lassen","","travel"],
+    ["Coronado Island, San Diego","","travel"],
+    ["Carmel + Monterey","","travel","Aquarium is beautiful, great for Arya. Carmel is spectacular."],
+    ["Laguna Beach","","travel","Stay at the Pelican Resort"],
+    ["Coronado","","travel","Stay at the Hotel Del"],
+  ];
+  state.places=raw.map(r=>({id:genId(),name:r[0],addr:r[1]||'',cat:r[2],visited:'no',notes:r[3]||''}));
+  saveData('places');
+}
+
+// ===== TAB SWITCHING =====
+document.getElementById('mainTabs').addEventListener('click',e=>{
+  if(!e.target.classList.contains('main-tab'))return;
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('tab-'+e.target.dataset.tab).classList.add('active');
+});
+
+// ===== CAMPS =====
+function getYearCamps(){return state.camps.filter(c=>new Date(c.start).getFullYear()===state.year).sort((a,b)=>a.start.localeCompare(b.start))}
+function getFilteredCamps(){let c=getYearCamps();if(state.filter!=='all')c=c.filter(x=>x.status===state.filter);return c}
+function detectConflicts(camps){
+  const s=new Set();
+  for(let i=0;i<camps.length;i++)for(let j=i+1;j<camps.length;j++){
+    const a=camps[i],b=camps[j];
+    if(a.start<=b.end&&b.start<=a.end){s.add(a.id);s.add(b.id)}
+  }
+  return s;
+}
+function changeYear(d){state.year+=d;renderCamps()}
+document.getElementById('filterTabs').addEventListener('click',e=>{
+  if(!e.target.classList.contains('filter-tab'))return;
+  document.querySelectorAll('#filterTabs .filter-tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');state.filter=e.target.dataset.filter;renderCamps();
+});
+
+function renderCamps(){
+  document.getElementById('currentYear').textContent=state.year;
+  const camps=getYearCamps(),filtered=getFilteredCamps(),conflicts=detectConflicts(camps);
+  const byS=s=>camps.filter(c=>c.status===s).length;
+  let days=0;camps.forEach(c=>{if(c.status!=='cancelled')days+=(new Date(c.end)-new Date(c.start))/864e5+1});
+  document.getElementById('stats').innerHTML=`
+    <div class="stat-card total"><div class="num">${camps.length}</div><div class="label">Total</div></div>
+    <div class="stat-card registered"><div class="num">${byS('registered')}</div><div class="label">Registered</div></div>
+    <div class="stat-card waitlisted"><div class="num">${byS('waitlisted')}</div><div class="label">Waitlisted</div></div>
+    <div class="stat-card interested"><div class="num">${byS('interested')}</div><div class="label">Interested</div></div>
+    <div class="stat-card completed"><div class="num">${byS('completed')}</div><div class="label">Completed</div></div>
+    <div class="stat-card weeks"><div class="num">${Math.ceil(days/7)}</div><div class="label">Weeks</div></div>`;
+
+  // Timeline
+  const active=camps.filter(c=>c.status!=='cancelled');
+  if(!active.length){document.getElementById('timeline').innerHTML='<div class="empty"><div class="icon">&#128197;</div>No camps yet</div>';
+  }else{
+    const y=state.year,ws=[];let d=new Date(y,5,1);d.setDate(d.getDate()-d.getDay());
+    const end=new Date(y,7,15);while(d<end){ws.push(new Date(d));d.setDate(d.getDate()+7)}
+    const tw=ws.length;
+    const wi=dt=>{const df=(new Date(dt)-ws[0])/864e5;return Math.max(0,df/7)};
+    let h='<div class="timeline-header">';
+    ws.forEach(w=>{h+=`<div class="week">${w.toLocaleString('en',{month:'short'})} ${w.getDate()}</div>`});h+='</div>';
+    active.forEach(c=>{
+      const l=wi(c.start),r=wi(c.end),lp=(l/tw*100).toFixed(2),wp=Math.max((r-l)/tw*100,2).toFixed(2),hc=conflicts.has(c.id);
+      h+=`<div class="timeline-row"><div class="timeline-label" title="${c.org}: ${c.name}">${c.org}: ${c.name}</div><div class="timeline-track">`;
+      ws.forEach(()=>{h+='<div class="week-slot"></div>'});
+      h+=`<div class="timeline-block" style="left:${lp}%;width:${wp}%;background:${c.color}" onclick="openCampModal('${c.id}')">${hc?'<div class="conflict-marker"></div>':''}</div></div></div>`;
+    });
+    document.getElementById('timeline').innerHTML=h;
+  }
+
+  // Cards
+  if(!filtered.length){document.getElementById('campsList').innerHTML='<div class="empty"><div class="icon">&#127957;&#65039;</div>No camps found</div>';return}
+  document.getElementById('campsList').innerHTML=filtered.map(c=>{
+    const s=new Date(c.start),e=new Date(c.end),d=Math.round((e-s)/864e5)+1,hc=conflicts.has(c.id);
+    const ds=s.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+e.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="camp-card ${hc?'conflict':''}" onclick="openCampModal('${c.id}')">
+      <div class="camp-status ${c.status}"></div>
+      <div style="width:4px;height:36px;border-radius:2px;background:${c.color};flex-shrink:0"></div>
+      <div class="camp-info"><div class="camp-name">${c.name}</div>
+        <div class="camp-org">${c.org||''}${c.age?' &middot; '+c.age:''}</div>
+        <div class="camp-meta">
+          <span>&#128197; ${ds} (${d}d)</span><span>&#128336; ${c.time||'TBD'}</span>
+          ${c.cost?`<span>&#128176; ${c.cost}</span>`:''}
+          ${c.url?`<span><a href="${c.url}" target="_blank" onclick="event.stopPropagation()">&#128279; Website</a></span>`:''}
+          ${hc?'<span style="color:var(--red)">&#9888;&#65039; Conflict</span>':''}
+        </div></div><span class="badge ${c.status}">${c.status}</span></div>`;
+  }).join('');
+}
+
+// Camp modal
+function openCampModal(id){
+  const m=document.getElementById('campModal'),isE=!!id;
+  document.getElementById('campModalTitle').textContent=isE?'Edit Camp':'Add Camp';
+  document.getElementById('campDeleteBtn').style.display=isE?'inline-flex':'none';
+  if(isE){const c=state.camps.find(x=>x.id===id);if(!c)return;
+    document.getElementById('campEditId').value=c.id;document.getElementById('cfName').value=c.name;
+    document.getElementById('cfOrg').value=c.org||'';document.getElementById('cfStart').value=c.start;
+    document.getElementById('cfEnd').value=c.end;document.getElementById('cfTime').value=c.time||'';
+    document.getElementById('cfStatus').value=c.status;document.getElementById('cfCost').value=c.cost||'';
+    document.getElementById('cfAge').value=c.age||'';document.getElementById('cfColor').value=c.color||'#f59e0b';
+    document.getElementById('cfUrl').value=c.url||'';document.getElementById('cfNotes').value=c.notes||'';
+  }else{
+    ['campEditId','cfName','cfOrg','cfTime','cfCost','cfAge','cfUrl','cfNotes'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('cfStart').value=state.year+'-06-01';document.getElementById('cfEnd').value=state.year+'-06-05';
+    document.getElementById('cfStatus').value='interested';document.getElementById('cfColor').value='#f59e0b';
+  }
+  m.classList.add('active');
+}
+function closeCampModal(){document.getElementById('campModal').classList.remove('active')}
+function saveCamp(){
+  const n=document.getElementById('cfName').value.trim(),s=document.getElementById('cfStart').value,e=document.getElementById('cfEnd').value;
+  if(!n||!s||!e){alert('Fill in name and dates');return}if(s>e){alert('End must be after start');return}
+  const d={name:n,org:document.getElementById('cfOrg').value.trim(),start:s,end:e,
+    time:document.getElementById('cfTime').value.trim(),status:document.getElementById('cfStatus').value,
+    cost:document.getElementById('cfCost').value.trim(),age:document.getElementById('cfAge').value.trim(),
+    color:document.getElementById('cfColor').value,url:document.getElementById('cfUrl').value.trim(),
+    notes:document.getElementById('cfNotes').value.trim()};
+  const id=document.getElementById('campEditId').value;
+  if(id){const i=state.camps.findIndex(c=>c.id===id);if(i>=0)state.camps[i]={...state.camps[i],...d}}
+  else{d.id=genId();state.camps.push(d)}
+  saveData('camps');closeCampModal();renderCamps();
+}
+function deleteCamp(){const id=document.getElementById('campEditId').value;if(!id||!confirm('Delete?'))return;state.camps=state.camps.filter(c=>c.id!==id);saveData('camps');closeCampModal();renderCamps()}
+function exportCamps(){
+  const c=getYearCamps();let csv='Name,Org,Start,End,Time,Status,Cost,Age,Notes,URL\n';
+  c.forEach(x=>{csv+=`"${x.name}","${x.org}","${x.start}","${x.end}","${x.time}","${x.status}","${x.cost}","${x.age}","${x.notes}","${x.url||''}"\n`});
+  const b=new Blob([csv],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=`arya-camps-${state.year}.csv`;a.click();
+}
+
+// ===== SUMMER SCHOOL =====
+function renderSchools(){
+  const list=state.schools;
+  if(!list.length){document.getElementById('schoolList').innerHTML='<div class="empty"><div class="icon">&#127979;</div>No programs yet</div>';return}
+  const statusColors={registered:'var(--green)',waitlisted:'var(--orange)',interested:'var(--blue)',completed:'var(--purple)'};
+  document.getElementById('schoolList').innerHTML=list.map(s=>`
+    <div class="list-card" onclick="openSchoolModal('${s.id}')" style="cursor:pointer">
+      <div class="icon-circle" style="background:rgba(59,130,246,.15);color:var(--blue)">&#127979;</div>
+      <div class="card-info">
+        <div class="card-title">${s.name}</div>
+        <div class="card-sub">${s.org}${s.age?' &middot; '+s.age:''}</div>
+        <div class="card-meta">
+          <span>&#128197; ${(s.dates||'TBD').replace(/\n/g,' | ')}</span>
+          ${s.url?`<span><a href="${s.url}" target="_blank" onclick="event.stopPropagation()">&#128279; Website</a></span>`:''}
+        </div>
+        ${s.notes?`<div class="card-meta"><span>&#128221; ${s.notes}</span></div>`:''}
+      </div>
+      <span class="badge ${s.status}">${s.status}</span>
+    </div>`).join('');
+}
+function openSchoolModal(id){
+  const m=document.getElementById('schoolModal'),isE=!!id;
+  document.getElementById('schoolModalTitle').textContent=isE?'Edit Program':'Add Program';
+  document.getElementById('schoolDeleteBtn').style.display=isE?'inline-flex':'none';
+  if(isE){const s=state.schools.find(x=>x.id===id);if(!s)return;
+    document.getElementById('schoolEditId').value=s.id;document.getElementById('sfName').value=s.name;
+    document.getElementById('sfOrg').value=s.org||'';document.getElementById('sfDates').value=s.dates||'';
+    document.getElementById('sfAge').value=s.age||'';document.getElementById('sfStatus').value=s.status||'interested';
+    document.getElementById('sfUrl').value=s.url||'';document.getElementById('sfNotes').value=s.notes||'';
+  }else{['schoolEditId','sfName','sfOrg','sfDates','sfAge','sfUrl','sfNotes'].forEach(x=>document.getElementById(x).value='');document.getElementById('sfStatus').value='interested'}
+  m.classList.add('active');
+}
+function closeSchoolModal(){document.getElementById('schoolModal').classList.remove('active')}
+function saveSchool(){
+  const n=document.getElementById('sfName').value.trim();if(!n){alert('Name required');return}
+  const d={name:n,org:document.getElementById('sfOrg').value.trim(),dates:document.getElementById('sfDates').value.trim(),
+    age:document.getElementById('sfAge').value.trim(),status:document.getElementById('sfStatus').value,
+    url:document.getElementById('sfUrl').value.trim(),notes:document.getElementById('sfNotes').value.trim()};
+  const id=document.getElementById('schoolEditId').value;
+  if(id){const i=state.schools.findIndex(s=>s.id===id);if(i>=0)state.schools[i]={...state.schools[i],...d}}
+  else{d.id=genId();state.schools.push(d)}
+  saveData('schools');closeSchoolModal();renderSchools();
+}
+function deleteSchool(){const id=document.getElementById('schoolEditId').value;if(!id||!confirm('Delete?'))return;state.schools=state.schools.filter(s=>s.id!==id);saveData('schools');closeSchoolModal();renderSchools()}
+
+// ===== CLASSES =====
+const typeIcons={art:'&#127912;',math:'&#128290;',music:'&#127925;',dance:'&#128131;',swim:'&#127946;',martial:'&#129354;',academic:'&#128218;',sports:'&#9917;'};
+const typeLabels={art:'Art',math:'Math',music:'Music',dance:'Dance',swim:'Swim',martial:'Martial Arts',academic:'Academic',sports:'Sports'};
+const typeCatClass={art:'cat-art',math:'cat-math',music:'cat-music',dance:'cat-dance',swim:'cat-swim',martial:'cat-martial',academic:'cat-academic',sports:'cat-sports'};
+
+document.getElementById('classFilterTabs').addEventListener('click',e=>{
+  if(!e.target.classList.contains('filter-tab'))return;
+  document.querySelectorAll('#classFilterTabs .filter-tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');state.classFilter=e.target.dataset.filter;renderClasses();
+});
+
+function renderClasses(){
+  let list=state.classes;
+  const q=(document.getElementById('classSearch').value||'').toLowerCase();
+  if(q)list=list.filter(c=>(c.name+c.typeCn+c.addr).toLowerCase().includes(q));
+  if(state.classFilter!=='all')list=list.filter(c=>c.type===state.classFilter);
+  if(!list.length){document.getElementById('classesList').innerHTML='<div class="empty"><div class="icon">&#127912;</div>No classes found</div>';return}
+  document.getElementById('classesList').innerHTML=list.map(c=>`
+    <div class="list-card" onclick="openClassModal('${c.id}')" style="cursor:pointer">
+      <div class="icon-circle" style="background:rgba(251,191,36,.1);color:var(--accent)">${typeIcons[c.type]||'&#128218;'}</div>
+      <div class="card-info">
+        <div class="card-title">${c.name}</div>
+        <div class="card-meta">
+          <span>&#128205; ${c.addr||'N/A'}</span>
+          <span>&#128663; ${c.drive||'?'}</span>
+          ${c.url?`<span><a href="${c.url}" target="_blank" onclick="event.stopPropagation()">&#128279; Website</a></span>`:''}
+        </div>
+      </div>
+      <span class="type-badge ${typeCatClass[c.type]||''}">${typeLabels[c.type]||c.type}</span>
+    </div>`).join('');
+}
+function openClassModal(id){
+  const m=document.getElementById('classModal'),isE=!!id;
+  document.getElementById('classModalTitle').textContent=isE?'Edit Class':'Add Class';
+  document.getElementById('classDeleteBtn').style.display=isE?'inline-flex':'none';
+  if(isE){const c=state.classes.find(x=>x.id===id);if(!c)return;
+    document.getElementById('clEditId').value=c.id;document.getElementById('clName').value=c.name;
+    document.getElementById('clType').value=c.type;document.getElementById('clDrive').value=c.drive||'';
+    document.getElementById('clAddr').value=c.addr||'';document.getElementById('clUrl').value=c.url||'';
+    document.getElementById('clNotes').value=c.notes||'';
+  }else{['clEditId','clName','clDrive','clAddr','clUrl','clNotes'].forEach(x=>document.getElementById(x).value='');document.getElementById('clType').value='art'}
+  m.classList.add('active');
+}
+function closeClassModal(){document.getElementById('classModal').classList.remove('active')}
+function saveClass(){
+  const n=document.getElementById('clName').value.trim();if(!n){alert('Name required');return}
+  const d={name:n,type:document.getElementById('clType').value,typeCn:typeLabels[document.getElementById('clType').value],
+    drive:document.getElementById('clDrive').value.trim(),addr:document.getElementById('clAddr').value.trim(),
+    url:document.getElementById('clUrl').value.trim(),notes:document.getElementById('clNotes').value.trim()};
+  const id=document.getElementById('clEditId').value;
+  if(id){const i=state.classes.findIndex(c=>c.id===id);if(i>=0)state.classes[i]={...state.classes[i],...d}}
+  else{d.id=genId();state.classes.push(d)}
+  saveData('classes');closeClassModal();renderClasses();
+}
+function deleteClass(){const id=document.getElementById('clEditId').value;if(!id||!confirm('Delete?'))return;state.classes=state.classes.filter(c=>c.id!==id);saveData('classes');closeClassModal();renderClasses()}
+
+// ===== PLACES =====
+document.getElementById('placeFilterTabs').addEventListener('click',e=>{
+  if(!e.target.classList.contains('filter-tab'))return;
+  document.querySelectorAll('#placeFilterTabs .filter-tab').forEach(t=>t.classList.remove('active'));
+  e.target.classList.add('active');state.placeFilter=e.target.dataset.filter;renderPlaces();
+});
+
+function renderPlaces(){
+  let list=state.places;
+  const q=(document.getElementById('placeSearch').value||'').toLowerCase();
+  if(q)list=list.filter(p=>(p.name+p.addr+p.notes).toLowerCase().includes(q));
+  if(state.placeFilter!=='all')list=list.filter(p=>p.cat===state.placeFilter);
+  if(!list.length){document.getElementById('placesList').innerHTML='<div class="empty"><div class="icon">&#127961;&#65039;</div>No places found</div>';return}
+  document.getElementById('placesList').innerHTML=list.map(p=>{
+    const isTravel=p.cat==='travel';
+    const icon=isTravel?'&#9992;&#65039;':'&#128205;';
+    const catClass=isTravel?'cat-travel':'cat-local';
+    return `<div class="list-card" onclick="openPlaceModal('${p.id}')" style="cursor:pointer">
+      <div class="icon-circle" style="background:${isTravel?'rgba(168,85,247,.15)':'rgba(59,130,246,.15)'};color:${isTravel?'var(--purple)':'var(--blue)'}">${icon}</div>
+      <div class="card-info">
+        <div class="card-title">${p.name} ${p.visited==='yes'?'<span style="color:var(--green)">&#10003;</span>':''}</div>
+        ${p.addr?`<div class="card-meta"><span>&#128205; ${p.addr}</span></div>`:''}
+        ${p.notes?`<div class="card-meta"><span>&#128221; ${p.notes}</span></div>`:''}
+      </div>
+      <span class="type-badge ${catClass}">${isTravel?'Travel':'Local'}</span>
+    </div>`;
+  }).join('');
+}
+function openPlaceModal(id){
+  const m=document.getElementById('placeModal'),isE=!!id;
+  document.getElementById('placeModalTitle').textContent=isE?'Edit Place':'Add Place';
+  document.getElementById('placeDeleteBtn').style.display=isE?'inline-flex':'none';
+  if(isE){const p=state.places.find(x=>x.id===id);if(!p)return;
+    document.getElementById('plEditId').value=p.id;document.getElementById('plName').value=p.name;
+    document.getElementById('plCat').value=p.cat||'local';document.getElementById('plVisited').value=p.visited||'no';
+    document.getElementById('plAddr').value=p.addr||'';document.getElementById('plNotes').value=p.notes||'';
+  }else{['plEditId','plName','plAddr','plNotes'].forEach(x=>document.getElementById(x).value='');
+    document.getElementById('plCat').value='local';document.getElementById('plVisited').value='no'}
+  m.classList.add('active');
+}
+function closePlaceModal(){document.getElementById('placeModal').classList.remove('active')}
+function savePlace(){
+  const n=document.getElementById('plName').value.trim();if(!n){alert('Name required');return}
+  const d={name:n,cat:document.getElementById('plCat').value,visited:document.getElementById('plVisited').value,
+    addr:document.getElementById('plAddr').value.trim(),notes:document.getElementById('plNotes').value.trim()};
+  const id=document.getElementById('plEditId').value;
+  if(id){const i=state.places.findIndex(p=>p.id===id);if(i>=0)state.places[i]={...state.places[i],...d}}
+  else{d.id=genId();state.places.push(d)}
+  saveData('places');closePlaceModal();renderPlaces();
+}
+function deletePlace(){const id=document.getElementById('plEditId').value;if(!id||!confirm('Delete?'))return;state.places=state.places.filter(p=>p.id!==id);saveData('places');closePlaceModal();renderPlaces()}
+
+// ===== CLOSE MODALS =====
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('active')})});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('active'))});
+
+// ===== INIT =====
+loadAll();renderCamps();renderSchools();renderClasses();renderPlaces();
+</script>
+</body>
+</html>
