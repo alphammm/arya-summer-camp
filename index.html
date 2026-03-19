@@ -260,6 +260,27 @@ a:hover{text-decoration:underline}
 </div>
 </div>
 
+<!-- ============ UPDATE MODAL ============ -->
+<div class="modal-overlay" id="updateModal">
+  <div class="modal" style="text-align:center">
+    <div style="font-size:3rem;margin-bottom:.5rem">&#127381;</div>
+    <h2 style="margin-bottom:.5rem">New Data Available!</h2>
+    <p style="color:var(--muted);font-size:.9rem;margin-bottom:1rem">We've added <strong style="color:var(--accent)">Harker Summer Camp</strong> and updated program info. How would you like to update?</p>
+    <div id="updateChangelog" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:.8rem;margin-bottom:1.2rem;text-align:left;font-size:.8rem;color:var(--muted);max-height:180px;overflow-y:auto">
+      <div style="font-weight:700;color:var(--text);margin-bottom:.4rem">What's new (v2):</div>
+      <div>&#8226; Harker Camp Plus — 4-week, 2-week &amp; 1-week sessions</div>
+      <div>&#8226; Harker Swim School — weekly lessons June–Aug</div>
+      <div>&#8226; Harker KinderCamp &amp; more in Summer School tab</div>
+      <div>&#8226; Conflict detection with existing schedule</div>
+    </div>
+    <div style="display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="doUpdate('merge')" style="flex:1;min-width:140px">&#128260; Merge (keep my edits + add new)</button>
+      <button class="btn btn-ghost" onclick="doUpdate('reset')" style="flex:1;min-width:140px">&#128260; Full Reset (fresh start)</button>
+    </div>
+    <button class="btn btn-ghost" onclick="doUpdate('skip')" style="margin-top:.75rem;width:100%;color:var(--muted)">Skip this update</button>
+  </div>
+</div>
+
 <!-- ============ CAMP MODAL ============ -->
 <div class="modal-overlay" id="campModal">
   <div class="modal">
@@ -369,11 +390,13 @@ a:hover{text-decoration:underline}
 
 <script>
 // ===== STATE =====
+const DATA_VERSION = 2; // bump this when seed data changes
 const LS = {
   camps: 'arya-camps',
   schools: 'arya-schools',
   classes: 'arya-classes',
-  places: 'arya-places'
+  places: 'arya-places',
+  version: 'arya-data-version'
 };
 let state = { year:2026, filter:'all', classFilter:'all', placeFilter:'all', camps:[], schools:[], classes:[], places:[] };
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
@@ -382,11 +405,65 @@ function loadAll(){
   for(const k of ['camps','schools','classes','places']){
     try{ const d=localStorage.getItem(LS[k]); if(d) state[k]=JSON.parse(d); }catch(e){}
   }
+  const savedVer = parseInt(localStorage.getItem(LS.version)||'0');
+  // First visit — seed everything
+  if(savedVer===0 && !state.camps.length){
+    seedCamps();seedSchools();seedClasses();seedPlaces();
+    localStorage.setItem(LS.version, DATA_VERSION);
+    return;
+  }
+  // Has old data but version is behind — show update popup
+  if(savedVer < DATA_VERSION){
+    document.getElementById('updateModal').classList.add('active');
+    return;
+  }
+  // Up to date — fill any empty categories
   if(!state.camps.length) seedCamps();
   if(!state.schools.length) seedSchools();
   if(!state.classes.length) seedClasses();
   if(!state.places.length) seedPlaces();
 }
+
+function doUpdate(mode){
+  document.getElementById('updateModal').classList.remove('active');
+  if(mode==='skip'){
+    // keep existing data, mark version so we don't ask again
+    localStorage.setItem(LS.version, DATA_VERSION);
+    if(!state.camps.length) seedCamps();
+    if(!state.schools.length) seedSchools();
+    if(!state.classes.length) seedClasses();
+    if(!state.places.length) seedPlaces();
+  } else if(mode==='reset'){
+    // wipe and reseed everything
+    state.camps=[];state.schools=[];state.classes=[];state.places=[];
+    seedCamps();seedSchools();seedClasses();seedPlaces();
+    localStorage.setItem(LS.version, DATA_VERSION);
+  } else if(mode==='merge'){
+    // merge: add new seed items that don't exist yet by name+org
+    const existingCampKeys = new Set(state.camps.map(c=>c.org+'|'+c.name));
+    const existingSchoolKeys = new Set(state.schools.map(s=>s.org+'|'+s.name));
+    // get fresh seed data without overwriting state
+    const tmpCamps=[];const tmpSchools=[];
+    const origCamps=state.camps; const origSchools=state.schools;
+    state.camps=[];seedCamps();tmpCamps.push(...state.camps);
+    state.schools=[];seedSchools();tmpSchools.push(...state.schools);
+    // restore originals
+    state.camps=origCamps; state.schools=origSchools;
+    // merge in new items
+    for(const c of tmpCamps){
+      if(!existingCampKeys.has(c.org+'|'+c.name)){state.camps.push(c)}
+    }
+    for(const s of tmpSchools){
+      if(!existingSchoolKeys.has(s.org+'|'+s.name)){state.schools.push(s)}
+    }
+    saveData('camps');saveData('schools');
+    if(!state.classes.length) seedClasses();
+    if(!state.places.length) seedPlaces();
+    localStorage.setItem(LS.version, DATA_VERSION);
+  }
+  renderCamps();renderSchools();renderClasses();renderPlaces();
+}
+
 function saveData(k){ localStorage.setItem(LS[k], JSON.stringify(state[k])); }
 
 // ===== SEED DATA =====
